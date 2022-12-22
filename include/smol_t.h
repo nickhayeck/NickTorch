@@ -71,3 +71,17 @@ const smol_t operator/(smol_t left, smol_t right);
 const smol_t dot(smol_t left, smol_t right);
 // exp
 const smol_t exp(smol_t right);
+
+// t-s and s-t operator definitions
+// add
+const smol_t operator+(double left, smol_t right);
+const smol_t operator+(smol_t left, double right);
+// sub
+const smol_t operator-(double left, smol_t right);
+const smol_t operator-(smol_t left, double right);
+// mul
+const smol_t operator*(double left, smol_t right);
+const smol_t operator*(smol_t left, double right);
+// div
+const smol_t operator/(double left, smol_t right);
+const smol_t operator/(smol_t left, double right);

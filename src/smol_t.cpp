@@ -55,6 +55,10 @@ void smol_t_inner::eval() {
 	}
 }
 
+Matrix partial_diff(smol_t t, int parent_index, Matrix acc) {
+	return t.inner->partial_diff(parent_index, acc);
+}
+
 Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
 	switch(op) {
 		case node_type::add: {
@@ -66,18 +70,33 @@ Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
 		}
 		case node_type::mul: {
 			// if parent is rhs, return lhs & v.v.
-			return (parent_index == 0) ? acc * edge_i[1]->val : acc * edge_i[0]->val;
+			if (parent_index == 0) {
+				Matrix a = broadcast_like(acc,edge_i[1]->val);
+				Matrix rhs = broadcast_like(edge_i[1]->val,acc);
+
+				return a * rhs;
+			} else {
+				Matrix a = broadcast_like(acc,edge_i[0]->val);
+				Matrix lhs = broadcast_like(edge_i[0]->val,acc);
+
+				return a * lhs;
+			}
 		}
 		case node_type::div: {
 			Matrix div;
 			if (parent_index == 0) {
 				// lhs
+				
 				div = 1 / edge_i[1]->val;
-				return acc * div;
+				Matrix a = broadcast_like(acc, div);
+				Matrix d = broadcast_like(div, acc);
+				return a * d;
 			} else if (parent_index == 1) {
 				// rhs
 				div = -1*edge_i[0]->val / edge_i[1]->val / edge_i[1]->val;
-				return acc * div;
+				Matrix a = broadcast_like(acc, div);
+				Matrix d = broadcast_like(div, acc);
+				return a * d;
 			}
 		}
 		case node_type::dot: {
@@ -152,6 +171,76 @@ const smol_t exp(smol_t right) {
 	smol_t* out = new smol_t(node_type::exp, &right);
 	right.inner->edge_o.push_back(out->inner);
 	
+	return *out;
+}
+
+// t-s and s-t operator definitions
+// add
+const smol_t operator+(double left, smol_t right) {
+	smol_t* cons = new smol_t(left);
+	smol_t* out = new smol_t(node_type::add, cons, &right);
+	cons->inner->edge_o.push_back(out->inner);
+	right.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+const smol_t operator+(smol_t left, double right) {
+	smol_t* cons = new smol_t(right);
+	smol_t* out = new smol_t(node_type::add, &left, cons);
+	cons->inner->edge_o.push_back(out->inner);
+	left.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+// sub
+const smol_t operator-(double left, smol_t right) {
+	smol_t* cons = new smol_t(left);
+	smol_t* out = new smol_t(node_type::sub, cons, &right);
+	cons->inner->edge_o.push_back(out->inner);
+	right.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+const smol_t operator-(smol_t left, double right) {
+	smol_t* cons = new smol_t(right);
+	smol_t* out = new smol_t(node_type::sub, &left, cons);
+	cons->inner->edge_o.push_back(out->inner);
+	left.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+// mul
+const smol_t operator*(double left, smol_t right) {
+	smol_t* cons = new smol_t(left);
+	smol_t* out = new smol_t(node_type::mul, cons, &right);
+	cons->inner->edge_o.push_back(out->inner);
+	right.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+const smol_t operator*(smol_t left, double right) {
+	smol_t* cons = new smol_t(right);
+	smol_t* out = new smol_t(node_type::mul, &left, cons);
+	cons->inner->edge_o.push_back(out->inner);
+	left.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+// div
+const smol_t operator/(double left, smol_t right) {
+	smol_t* cons = new smol_t(left);
+	smol_t* out = new smol_t(node_type::div, cons, &right);
+	cons->inner->edge_o.push_back(out->inner);
+	right.inner->edge_o.push_back(out->inner);
+
+	return *out;
+}
+const smol_t operator/(smol_t left, double right) {
+	smol_t* cons = new smol_t(right);
+	smol_t* out = new smol_t(node_type::div, &left, cons);
+	cons->inner->edge_o.push_back(out->inner);
+	left.inner->edge_o.push_back(out->inner);
+
 	return *out;
 }
 

@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.23)
 project(smol-grad)
 # Set C++ Standard to C++11
 set(CMAKE_CXX_STANDARD 11)
+# Ensure all warnings are on
+add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 # The header files for the project
 set(HEADER_FILES include/matrix.h include/smol_g.h include/smol_t.h)

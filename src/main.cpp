@@ -23,13 +23,13 @@ int main() {
 	// tensor loss = dot(s2 - s1, s2 - s1) 
 
 	// optimizer opt(loss);
-	double arr[4] = {1,1,1,1};
+	double arr[4] = {2,2,2,2};
 	Matrix mat(arr, 2, 2);
 	smol_t st1(mat);
 	smol_t st2(mat);
 	smol_t st3(mat);
 
-	smol_t out1 = exp(st1*st2)*st1/st2 + st1*st2;
+	smol_t out1 = 1 - 2*exp(st1*st2)*st1/st2 + st1*st2*3;
 	// smol_t out2 = st2 * st3 + dot(st1, st2);
 	smol_g graph(out1);
 
