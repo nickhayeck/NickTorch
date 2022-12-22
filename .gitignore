@@ -1,3 +1,4 @@
 **.DSYM
 .vscode
 **.o
+build/**
