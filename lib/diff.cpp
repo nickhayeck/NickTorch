@@ -271,18 +271,18 @@ struct smol_t_inner {
 			}
 			case node_type::mul: {
 				// if parent is rhs, return lhs & v.v.
-				return (parent_index == 0) ? acc.dot(edge_i[1]->val) : acc.dot(edge_i[0]->val);
+				return (parent_index == 0) ? acc * edge_i[1]->val : acc * edge_i[0]->val;
 			}
 			case node_type::div: {
 				Matrix div;
 				if (parent_index == 0) {
 					// lhs
 					div = 1 / edge_i[1]->val;
-					return acc.dot(div);
+					return acc * div;
 				} else if (parent_index == 1) {
 					// rhs
 					div = -1*edge_i[0]->val / edge_i[1]->val / edge_i[1]->val;
-					return acc.dot(div);
+					return acc * div;
 				}
 			}
 			case node_type::dot: {
@@ -298,7 +298,7 @@ struct smol_t_inner {
 			}
 			case node_type::exp: {
 				Matrix exp = edge_i[0]->val.exp();
-				return acc.dot(exp);
+				return acc * exp;
 			}
 			default:{
 				return acc;
@@ -378,25 +378,34 @@ const smol_t exp(smol_t right) {
 	return *out;
 }
 
+// forward declare for use as a friend struct
+struct smol_g;
 // gradient ball: holds all of the computed gradients 
 // from a backpropagation step and can update the graph 
 // TODO: make this an abstract class to allow for various
 // optimization methods
 struct grad_ball {
+	friend struct smol_g;
+private:
 	std::unordered_map<smol_t_inner*,Matrix> ball;
 	std::unordered_map<smol_t_inner*,int> acc_counter;
-public:
-	const Matrix get(smol_t t) {
-		return get(t.inner);
+	
+	bool contains(smol_t_inner* t) {
+		return (ball.find(t) != ball.end());
 	}
 	const Matrix get(smol_t_inner* t) {
 		return ball[t];
 	}
+	void acc(smol_t_inner* t, Matrix deriv) {
+		if (contains(t)) ball[t] = ball[t] + deriv;
+		else ball[t] = deriv;
+	}
+public:
+	const Matrix get(smol_t t) {
+		return get(t.inner);
+	}
 	bool contains(smol_t t) {
 		return (ball.find(t.inner) != ball.end());
-	}
-	bool contains(smol_t_inner* t) {
-		return (ball.find(t) != ball.end());
 	}
 	void append(smol_t t, Matrix deriv) {
 		ball[t.inner] = deriv;
@@ -404,13 +413,7 @@ public:
 	void acc(smol_t t, Matrix deriv) {
 		acc(t.inner, deriv);
 	}
-	void acc(smol_t_inner* t, Matrix deriv) {
-		if (contains(t)) ball[t] = ball[t] + deriv;
-		else ball[t] = deriv;
-	}
-	// bool update(smol_g& graph) {
-	// 	return false;
-	// }
+
 };
 
 // smol graph: a wrapper around a collection of smol tensor nodes
@@ -546,8 +549,8 @@ int main() {
 	// tensor loss = dot(s2 - s1, s2 - s1) 
 
 	// optimizer opt(loss);
-	double arr[1] = {2};
-	Matrix mat(arr, 1, 1);
+	double arr[4] = {1,1,1,1};
+	Matrix mat(arr, 2, 2);
 	smol_t st1(mat);
 	smol_t st2(mat);
 	smol_t st3(mat);
@@ -577,8 +580,4 @@ int main() {
 	std::cout << "del(out1) / del(st1)" << std::endl;
 	Matrix grad = gb.get(st1);
 	std::cout << grad;
-	// for (auto pair : gb.ball) {
-	// 	std::cout << pair.second;
-	// 	std::cout << std::endl;
-	// }
 }
