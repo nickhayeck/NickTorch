@@ -13,6 +13,7 @@ struct smol_g;
 // optimization methods
 struct grad_ball {
 	friend struct smol_g;
+    friend void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q);
 private:
 	std::unordered_map<smol_t_inner*,Matrix> ball;
 	smol_t output;
@@ -30,7 +31,7 @@ private:
 	}
 public:
     grad_ball(smol_t output) : output(output) {}
-    
+
 	const Matrix get(smol_t t) {
 		return get(t.inner);
 	}
@@ -72,10 +73,7 @@ struct smol_g {
 
 	void fwd();
 	
-	// computes the graph's gradient over an output using 
-	// breadth-first iteration over the graph starting from
-	// the given output node.
-	grad_ball bwd(smol_t output);
+
 
 private:
 	// helper functions for parsing the tree
@@ -83,6 +81,14 @@ private:
 	void _add(smol_t_inner* t);
 	// helper function for forward pass over the graph
 	void _fwd(smol_t_inner* t, std::unordered_set<smol_t_inner*>& evaled);
-	// helper function for backward pass over the graph
-	void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q);
 };
+
+// computes the graph's gradient over an output using 
+// breadth-first iteration over the graph starting from
+// the given output node.
+grad_ball bwd(smol_t output);
+// helper function for backward pass over the graph
+void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q);
+// convenience function for doing most of the things we care about at once
+// probably not the best thing to use if we don't really care about the 
+grad_ball grad(smol_t output);

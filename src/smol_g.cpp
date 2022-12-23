@@ -17,9 +17,7 @@ void smol_g::fwd() {
 // computes the graph's gradient over an output using 
 // breadth-first iteration over the graph starting from
 // the given output node.
-grad_ball smol_g::bwd(smol_t output) {
-	// assert the node from which to backpropagate is an output
-	assert(std::find(outputs.begin(), outputs.end(), output.inner) != outputs.end());
+grad_ball bwd(smol_t output) {
 	std::queue<smol_t_inner*> queue;
 	grad_ball gball(output);
 	// append to gball and queue
@@ -73,7 +71,7 @@ void smol_g::_fwd(smol_t_inner* t, std::unordered_set<smol_t_inner*>& evaled) {
 	}
 }
 // helper function for backward pass over the graph
-void smol_g::_bwd(grad_ball& gb, std::queue<smol_t_inner*>& q) {
+void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q) {
 	smol_t_inner* t = q.front();
 	q.pop();
 
@@ -86,4 +84,14 @@ void smol_g::_bwd(grad_ball& gb, std::queue<smol_t_inner*>& q) {
 		Matrix pd = t->partial_diff(i, acc_child);
 		gb.acc(parent, pd);
 	}
+}
+
+
+// convenience function for doing most of the things we care about at once
+// probably not the best thing to use if we don't really care about the 
+grad_ball grad(smol_t output) {
+	smol_g graph(output);
+
+	graph.fwd();
+	return bwd(output);
 }
