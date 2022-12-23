@@ -4,24 +4,33 @@ Matrix Matrix::all_scalar(double d) {
 	for (unsigned long i = 0; i < val.size(); i++) val[i] = d;
 	return *this;
 }
+// sets diagonal to one. *Warning*: will not change the off-diagnoal elements
+Matrix Matrix::eye() {
+	Matrix out = *this;
+	for(int i = 0; i < cols; i++) {
+		out.val[i*rows + i] = 1;
+	}
+	return out;
+}
+// sets to all one value
+Matrix Matrix::ones() {
+	Matrix out = *this;
+	for (unsigned long i = 0; i < val.size(); i++) val[i] = 1;
+	return out;
+}
 
 
 // minimal floating-point matrix implementation
-Matrix Matrix::t() const {
+Matrix Matrix::t() {
 	Matrix out = *this;
 	out.is_transposed = (is_transposed) ? false : true;
+	
+	std::swap(out.rows, out.cols);
+	
 	return out;
 }
 bool Matrix::is_scalar() const {
 	return (rows == 1 && cols == 1);
-}
-
-int Matrix::current_rows() const {
-	return (!this->is_transposed) ? this->rows : this->cols;
-}
-
-int Matrix::current_cols() const {
-	return (!this->is_transposed) ? this->cols : this->rows;
 }
 
 void Matrix::set(int i, int j, double value) {
@@ -83,19 +92,24 @@ Matrix operator/(Matrix a, Matrix b) {
 }
 // dot
 Matrix Matrix::dot(Matrix other) {
-	assert(this->current_cols() == other.current_rows());
+	assert(this->cols == other.rows);
 
-	Matrix out(this->current_rows(), other.current_cols());
+	Matrix out(this->rows, other.cols);
 	
-	for (int i = 0; i < current_rows(); i++) {
-		for (int j = 0; j < other.current_cols(); j++) {
-			for (int k = 0; k < current_cols(); k++) {
-				out.val[i*current_cols() + j] += this->get(i,k) * other.get(k,j);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < other.cols; j++) {
+			for (int k = 0; k < cols; k++) {
+				out.val[i*cols + j] += this->get(i,k) * other.get(k,j);
 			}
 		}
 	}
 
 	return out;
+}
+//unary operators
+// negation
+Matrix Matrix::operator-() {
+	return -1 * *this;
 }
 // exp
 Matrix Matrix::exp() {
@@ -106,13 +120,21 @@ Matrix Matrix::exp() {
 
 	return out;
 }
+// log
+Matrix Matrix::log() {
+	Matrix out = *this;
+	for (unsigned long i = 0; i < val.size(); i++) {
+		out.val[i] = std::log(out.val[i]);
+	}
 
+	return out;
+}
 
 // utility operations
 // print
 void operator<<(std::ostream& o, Matrix& b) {
-	for (int i = 0; i < b.current_rows(); i++) {
-		for (int j = 0; j < b.current_cols(); j++) {
+	for (int i = 0; i < b.rows; i++) {
+		for (int j = 0; j < b.cols; j++) {
 			o << b.get(i,j) << ",";
 		}
 		o << std::endl;
@@ -127,15 +149,61 @@ const Matrix broadcast_like(Matrix a, Matrix b) {
 		return a;
 	} else if (a_s) {
 		double scalar = a.get(0,0);
-		return Matrix(b.current_rows(), b.current_cols()).all_scalar(scalar);
+		return Matrix(b.rows, b.cols).all_scalar(scalar);
 	} 
 	return a;
 }
 
-
 // matrix-scalar operations
+// add
+Matrix operator+(double a, Matrix b) {
+	Matrix out(b);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] += a;
+	}
+
+	return out;
+}
+Matrix operator+(Matrix a, double b) {
+	Matrix out(a);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] += b;
+	}
+
+	return out;
+}
+// sub
+Matrix operator-(double a, Matrix b) {
+	Matrix out(b);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] -= a;
+	}
+
+	return out;
+}
+Matrix operator-(Matrix a, double b) {
+	Matrix out(a);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] -= b;
+	}
+
+	return out;
+}
 // mul
 Matrix operator*(double d, Matrix b) {
+	Matrix out(b);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] *= d;
+	}
+
+	return out;
+}
+Matrix operator*(Matrix b, double d) {
 	Matrix out(b);
 
 	for(unsigned long i = 0; i < out.val.size(); i++) {
@@ -150,6 +218,15 @@ Matrix operator/(double d, Matrix b) {
 
 	for(unsigned long i = 0; i < out.val.size(); i++) {
 		out.val[i] = d / out.val[i];
+	}
+
+	return out;
+}
+Matrix operator/(Matrix b, double d) {
+	Matrix out(b);
+
+	for(unsigned long i = 0; i < out.val.size(); i++) {
+		out.val[i] /= d;
 	}
 
 	return out;

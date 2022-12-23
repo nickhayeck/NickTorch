@@ -42,14 +42,25 @@ void smol_t_inner::eval() {
 		}
 
 		case node_type::exp: {
-			// this = exp(lhs)
+			// this = exp(rhs)
 			assert(edge_i.size() == 1);
 			val = edge_i[0]->val.exp();
 			break;
 		}
 
+		case node_type::log: {
+			// this = log(rhs)
+			assert(edge_i.size() == 1);
+			val = edge_i[0]->val.log();
+			break;
+		}
+		case node_type::input:
+		case node_type::constant: {
+			break;
+		}
 		default: {
-			// no eval for constants or input
+			std::cout << "Forward pass does not implement this operation!" << std::endl;
+			std::exit(1);
 		}
 
 	}
@@ -93,7 +104,7 @@ Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
 				return a * d;
 			} else if (parent_index == 1) {
 				// rhs
-				div = -1*edge_i[0]->val / edge_i[1]->val / edge_i[1]->val;
+				div = -edge_i[0]->val / edge_i[1]->val / edge_i[1]->val;
 				Matrix a = broadcast_like(acc, div);
 				Matrix d = broadcast_like(div, acc);
 				return a * d;
@@ -114,8 +125,17 @@ Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
 			Matrix exp = edge_i[0]->val.exp();
 			return acc * exp;
 		}
-		default:{
+		case node_type::log: {
+			Matrix log = 1 / edge_i[0]->val;
+			return acc * log;
+		}
+		case node_type::input:
+		case node_type::constant: {
 			return acc;
+		}
+		default:{
+			std::cout << "Backward pass does not implement this operation!" << std::endl;
+			std::exit(1);
 		}
 	}
 }
@@ -169,6 +189,14 @@ const smol_t dot(smol_t left, smol_t right) {
 // exp
 const smol_t exp(smol_t right) {
 	smol_t* out = new smol_t(node_type::exp, &right);
+	right.inner->edge_o.push_back(out->inner);
+	
+	return *out;
+}
+
+// log
+const smol_t log(smol_t right) {
+	smol_t* out = new smol_t(node_type::log, &right);
 	right.inner->edge_o.push_back(out->inner);
 	
 	return *out;

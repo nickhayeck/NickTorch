@@ -21,7 +21,7 @@ grad_ball smol_g::bwd(smol_t output) {
 	// assert the node from which to backpropagate is an output
 	assert(std::find(outputs.begin(), outputs.end(), output.inner) != outputs.end());
 	std::queue<smol_t_inner*> queue;
-	grad_ball gball;
+	grad_ball gball(output);
 	// append to gball and queue
 	gball.append(output, output.get_val().like_ones());
 	queue.emplace(output.inner);

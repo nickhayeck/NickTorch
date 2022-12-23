@@ -23,18 +23,18 @@ struct Matrix {
 	// default constructor
 	Matrix() : rows(1), cols(1), val(1), is_transposed(false) {}
 	
+    // init configurations
     // sets to all one value
     Matrix all_scalar(double d);
-
-
+    // sets diagonal to one. *Warning*: will not change the off-diagnoal elements
+    Matrix eye();
+    // sets to all one value
+    Matrix ones();
+    
     // transpose
-	Matrix t() const;
+	Matrix t();
     // checks if matrix is a one by one matrix, holding a single scalar
     bool is_scalar() const;
-
-	int current_rows() const;
-
-	int current_cols() const;
 
 	inline const Matrix like_ones() {
         Matrix out = *this;
@@ -48,8 +48,12 @@ struct Matrix {
 	void set(int i, int j, double value);
 	double get(int i, int j);
     // unary matrix operations
+    // negation
+    Matrix operator-();
 	// exp
 	Matrix exp();
+    // log: the natural log
+	Matrix log();
     // dot
     Matrix dot(Matrix b);
 
@@ -70,7 +74,15 @@ Matrix operator*(Matrix a, Matrix b);
 // div
 Matrix operator/(Matrix a, Matrix b);
 // matrix-scalar operations
+// add
+Matrix operator+(double a, Matrix b);
+Matrix operator+(Matrix a, double b);
+// sub
+Matrix operator-(double a, Matrix b);
+Matrix operator-(Matrix a, double b);
 // mul
 Matrix operator*(double d, Matrix b);
+Matrix operator*(Matrix b, double d);
 // div
 Matrix operator/(double d, Matrix b);
+Matrix operator/(Matrix b, double d);

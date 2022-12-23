@@ -15,7 +15,7 @@ struct grad_ball {
 	friend struct smol_g;
 private:
 	std::unordered_map<smol_t_inner*,Matrix> ball;
-	std::unordered_map<smol_t_inner*,int> acc_counter;
+	smol_t output;
 	// functions that will be wrapped later for use by the user
     // and are used internally by smol_g 
 	bool contains(smol_t_inner* t) {
@@ -29,6 +29,8 @@ private:
 		else ball[t] = deriv;
 	}
 public:
+    grad_ball(smol_t output) : output(output) {}
+    
 	const Matrix get(smol_t t) {
 		return get(t.inner);
 	}
