@@ -1,5 +1,5 @@
 # `nick-torch`: a minimal autodiff implementation in C++
-Have you ever wanted derivatives but you're stuck with plain, old floating point operations? Have you ever wanted your operations to construct a computational graph in the background? Meet `smol-grad`. With this library you can turn boring old C++ like `double z = x * y + log(x) + exp(x * y) / y` into cool, sick, and differentiable code just by changing a data type: `smol_t z = x * y + log(x) + exp(x * y) / y`.
+Have you ever wanted derivatives but you're stuck with plain, old floating point operations? Have you ever wanted your operations to construct a computational graph in the background? Meet `nick-torch`. With this library you can turn boring old C++ like `double z = x * y + log(x) + exp(x * y) / y` into cool, sick, and differentiable code just by changing a data type: `smol_t z = x * y + log(x) + exp(x * y) / y`.
 
 Now all you have to do is grab its gradient like so: `grad(z)`, and you have every gradient one could desire (as long as you are desiring the gradients of `x` or `y`, that is).
 
