@@ -1,10 +1,10 @@
-#include "smol_t.h"
+#include "type.h"
 
-// a wrapper around the internals of smol_t
+// a wrapper around the internals of nick_t
 // so that we can pass around an object and
 // not references to that object
 
-void smol_t_inner::eval() {
+void nick_t_inner::eval() {
 	switch (op) {
 		case node_type::add: {
 			// this = lhs + rhs
@@ -66,11 +66,11 @@ void smol_t_inner::eval() {
 	}
 }
 
-Matrix partial_diff(smol_t t, int parent_index, Matrix acc) {
+Matrix partial_diff(nick_t t, int parent_index, Matrix acc) {
 	return t.inner->partial_diff(parent_index, acc);
 }
 
-Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
+Matrix nick_t_inner::partial_diff(int parent_index, Matrix acc) const {
 	switch(op) {
 		case node_type::add: {
 			return acc;
@@ -143,16 +143,16 @@ Matrix smol_t_inner::partial_diff(int parent_index, Matrix acc) const {
 
 // t-t operator definitions 
 // add
-const smol_t operator+(smol_t left, smol_t right) {
-	smol_t* out = new smol_t(node_type::add, &left, &right);
+const nick_t operator+(nick_t left, nick_t right) {
+	nick_t* out = new nick_t(node_type::add, &left, &right);
 	left.inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
 // sub
-const smol_t operator-(smol_t left, smol_t right) {
-	smol_t* out = new smol_t(node_type::sub, &left, &right);
+const nick_t operator-(nick_t left, nick_t right) {
+	nick_t* out = new nick_t(node_type::sub, &left, &right);
 	left.inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
@@ -160,8 +160,8 @@ const smol_t operator-(smol_t left, smol_t right) {
 }
 
 // mul
-const smol_t operator*(smol_t left, smol_t right) {
-	smol_t* out = new smol_t(node_type::mul, &left, &right);
+const nick_t operator*(nick_t left, nick_t right) {
+	nick_t* out = new nick_t(node_type::mul, &left, &right);
 	left.inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
@@ -169,8 +169,8 @@ const smol_t operator*(smol_t left, smol_t right) {
 }
 
 // div
-const smol_t operator/(smol_t left, smol_t right) {
-	smol_t* out = new smol_t(node_type::div, &left, &right);
+const nick_t operator/(nick_t left, nick_t right) {
+	nick_t* out = new nick_t(node_type::div, &left, &right);
 	left.inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
@@ -178,8 +178,8 @@ const smol_t operator/(smol_t left, smol_t right) {
 }
 
 // dot
-const smol_t dot(smol_t left, smol_t right) {
-	smol_t* out = new smol_t(node_type::dot, &left, &right);
+const nick_t dot(nick_t left, nick_t right) {
+	nick_t* out = new nick_t(node_type::dot, &left, &right);
 	left.inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 	
@@ -187,16 +187,16 @@ const smol_t dot(smol_t left, smol_t right) {
 }
 
 // exp
-const smol_t exp(smol_t right) {
-	smol_t* out = new smol_t(node_type::exp, &right);
+const nick_t exp(nick_t right) {
+	nick_t* out = new nick_t(node_type::exp, &right);
 	right.inner->edge_o.push_back(out->inner);
 	
 	return *out;
 }
 
 // log
-const smol_t log(smol_t right) {
-	smol_t* out = new smol_t(node_type::log, &right);
+const nick_t log(nick_t right) {
+	nick_t* out = new nick_t(node_type::log, &right);
 	right.inner->edge_o.push_back(out->inner);
 	
 	return *out;
@@ -204,68 +204,68 @@ const smol_t log(smol_t right) {
 
 // t-s and s-t operator definitions
 // add
-const smol_t operator+(double left, smol_t right) {
-	smol_t* cons = new smol_t(left);
-	smol_t* out = new smol_t(node_type::add, cons, &right);
+const nick_t operator+(double left, nick_t right) {
+	nick_t* cons = new nick_t(left);
+	nick_t* out = new nick_t(node_type::add, cons, &right);
 	cons->inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
-const smol_t operator+(smol_t left, double right) {
-	smol_t* cons = new smol_t(right);
-	smol_t* out = new smol_t(node_type::add, &left, cons);
+const nick_t operator+(nick_t left, double right) {
+	nick_t* cons = new nick_t(right);
+	nick_t* out = new nick_t(node_type::add, &left, cons);
 	cons->inner->edge_o.push_back(out->inner);
 	left.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
 // sub
-const smol_t operator-(double left, smol_t right) {
-	smol_t* cons = new smol_t(left);
-	smol_t* out = new smol_t(node_type::sub, cons, &right);
+const nick_t operator-(double left, nick_t right) {
+	nick_t* cons = new nick_t(left);
+	nick_t* out = new nick_t(node_type::sub, cons, &right);
 	cons->inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
-const smol_t operator-(smol_t left, double right) {
-	smol_t* cons = new smol_t(right);
-	smol_t* out = new smol_t(node_type::sub, &left, cons);
+const nick_t operator-(nick_t left, double right) {
+	nick_t* cons = new nick_t(right);
+	nick_t* out = new nick_t(node_type::sub, &left, cons);
 	cons->inner->edge_o.push_back(out->inner);
 	left.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
 // mul
-const smol_t operator*(double left, smol_t right) {
-	smol_t* cons = new smol_t(left);
-	smol_t* out = new smol_t(node_type::mul, cons, &right);
+const nick_t operator*(double left, nick_t right) {
+	nick_t* cons = new nick_t(left);
+	nick_t* out = new nick_t(node_type::mul, cons, &right);
 	cons->inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
-const smol_t operator*(smol_t left, double right) {
-	smol_t* cons = new smol_t(right);
-	smol_t* out = new smol_t(node_type::mul, &left, cons);
+const nick_t operator*(nick_t left, double right) {
+	nick_t* cons = new nick_t(right);
+	nick_t* out = new nick_t(node_type::mul, &left, cons);
 	cons->inner->edge_o.push_back(out->inner);
 	left.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
 // div
-const smol_t operator/(double left, smol_t right) {
-	smol_t* cons = new smol_t(left);
-	smol_t* out = new smol_t(node_type::div, cons, &right);
+const nick_t operator/(double left, nick_t right) {
+	nick_t* cons = new nick_t(left);
+	nick_t* out = new nick_t(node_type::div, cons, &right);
 	cons->inner->edge_o.push_back(out->inner);
 	right.inner->edge_o.push_back(out->inner);
 
 	return *out;
 }
-const smol_t operator/(smol_t left, double right) {
-	smol_t* cons = new smol_t(right);
-	smol_t* out = new smol_t(node_type::div, &left, cons);
+const nick_t operator/(nick_t left, double right) {
+	nick_t* cons = new nick_t(right);
+	nick_t* out = new nick_t(node_type::div, &left, cons);
 	cons->inner->edge_o.push_back(out->inner);
 	left.inner->edge_o.push_back(out->inner);
 

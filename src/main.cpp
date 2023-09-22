@@ -1,13 +1,13 @@
 // includes below
-#include "smol_t.h"
-#include "smol_g.h"
+#include "type.h"
+#include "graph.h"
 // end includes
 
 int main() {
-	smol_t x = smol_t(2);
-	smol_t y = smol_t(3);
+	nick_t x = nick_t(2);
+	nick_t y = nick_t(3);
 
-	smol_t z = x * y + log(x) + exp(x * y) / y;
+	nick_t z = x * y + log(x) + exp(x * y) / y;
 
 	grad_ball gb = grad(z);
 

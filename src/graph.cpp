@@ -1,14 +1,14 @@
-#include "smol_g.h"
+#include "graph.h"
 
-void smol_g::fwd() {
+void nick_g::fwd() {
 	// place all constants and inputs into the evaluated set
-	std::unordered_set<smol_t_inner*> evaled;
+	std::unordered_set<nick_t_inner*> evaled;
 
 	evaled.insert(constants.begin(), constants.end());
 	evaled.insert(inputs.begin(), inputs.end());
 
-	for (smol_t_inner* input : inputs) {
-		for (smol_t_inner* input_child : input->edge_o) {
+	for (nick_t_inner* input : inputs) {
+		for (nick_t_inner* input_child : input->edge_o) {
 			_fwd(input_child, evaled);
 		}
 	}
@@ -17,8 +17,8 @@ void smol_g::fwd() {
 // computes the graph's gradient over an output using 
 // breadth-first iteration over the graph starting from
 // the given output node.
-grad_ball bwd(smol_t output) {
-	std::queue<smol_t_inner*> queue;
+grad_ball bwd(nick_t output) {
+	std::queue<nick_t_inner*> queue;
 	grad_ball gball(output);
 	// append to gball and queue
 	gball.append(output, output.get_val().like_ones());
@@ -31,13 +31,13 @@ grad_ball bwd(smol_t output) {
 }
 
 // helper functions for parsing the tree
-void smol_g::_trav(smol_t_inner* t) {
+void nick_g::_trav(nick_t_inner* t) {
 	_add(t);
-	for (smol_t_inner* up : t->edge_i) {
+	for (nick_t_inner* up : t->edge_i) {
 		_trav(up);
 	}
 }
-void smol_g::_add(smol_t_inner* t) {
+void nick_g::_add(nick_t_inner* t) {
 	if (t->edge_i.size() == 0) {
 		// source found! it could be a constant or an input
 		if (t->op == node_type::constant && std::find(constants.begin(), constants.end(), t) == constants.end()) {
@@ -53,10 +53,10 @@ void smol_g::_add(smol_t_inner* t) {
 	}
 }
 // helper function for forward pass over the graph
-void smol_g::_fwd(smol_t_inner* t, std::unordered_set<smol_t_inner*>& evaled) {
+void nick_g::_fwd(nick_t_inner* t, std::unordered_set<nick_t_inner*>& evaled) {
 	if(evaled.find(t) == evaled.end()) {
 		bool parents_evaled = true;
-		for (smol_t_inner* parent : t->edge_i) {
+		for (nick_t_inner* parent : t->edge_i) {
 			if (evaled.find(parent) == evaled.end()) parents_evaled = false;
 		}
 
@@ -64,20 +64,20 @@ void smol_g::_fwd(smol_t_inner* t, std::unordered_set<smol_t_inner*>& evaled) {
 			// evaluate the node
 			t->eval();
 			evaled.insert(t);
-			for (smol_t_inner* child : t->edge_o) {
+			for (nick_t_inner* child : t->edge_o) {
 				_fwd(child, evaled);
 			}
 		}
 	}
 }
 // helper function for backward pass over the graph
-void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q) {
-	smol_t_inner* t = q.front();
+void _bwd(grad_ball& gb, std::queue<nick_t_inner*>& q) {
+	nick_t_inner* t = q.front();
 	q.pop();
 
 	Matrix acc_child = gb.get(t);
 	for (unsigned long i = 0; i < t->edge_i.size(); i++) {
-		smol_t_inner* parent = t->edge_i[i];
+		nick_t_inner* parent = t->edge_i[i];
 		if (!gb.contains(parent)) {
 			q.emplace(parent);
 		}
@@ -89,8 +89,8 @@ void _bwd(grad_ball& gb, std::queue<smol_t_inner*>& q) {
 
 // convenience function for doing most of the things we care about at once
 // probably not the best thing to use if we don't really care about the 
-grad_ball grad(smol_t output) {
-	smol_g graph(output);
+grad_ball grad(nick_t output) {
+	nick_g graph(output);
 
 	graph.fwd();
 	return bwd(output);
