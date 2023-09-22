@@ -42,7 +42,7 @@ struct nick_t_inner {
 	Matrix partial_diff(int parent_index, Matrix acc) const;
 };
 
-// smol tensor node: a minimal directed acyclic graph.
+// tensor node: a minimal directed acyclic graph.
 // this is acyclic because i am asking 
 // everyone nicely to not add cycles 👍
 struct nick_t {
@@ -58,7 +58,7 @@ struct nick_t {
 	Matrix get_val() const {
 		return inner->val;
 	}
-    // some convenient functions for help initializing smol tensors
+    // some convenient functions for help initializing tensors
     nick_t ones() const {
         return inner->val.ones();
     }

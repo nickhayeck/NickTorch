@@ -48,7 +48,7 @@ public:
 };
 
 
-// smol graph: a wrapper around a collection of smol tensor nodes
+// graph: a wrapper around a collection of tensor nodes
 struct nick_g {
 	// inputs on the graph
 	std::vector<nick_t_inner*> inputs;
